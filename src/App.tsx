@@ -1,11 +1,42 @@
 import React, { useState, useRef } from 'react';
 import { Mic, Square, Play, Linkedin, FileText, Briefcase, Building2, GraduationCap } from 'lucide-react';
 
+interface ProfileData {
+  name: string;
+  title: string;
+  company: string;
+  bio: string;
+  currentRole: {
+    title: string;
+    company: string;
+    period: string;
+    responsibilities: string[];
+  };
+}
+
 function App() {
   const [isRecording, setIsRecording] = useState(false);
   const [audioURL, setAudioURL] = useState<string | null>(null);
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const audioChunks = useRef<Blob[]>([]);
+
+  const [profile, setProfile] = useState<ProfileData>({
+    name: "Frontend Developer & Technical Lead",
+    title: "Frontend Developer & Technical Lead",
+    company: "Halo Media LLC",
+    bio: "With a professional career of over 10 years, I have specialized in frontend development and technical leadership of innovative projects. Currently, I serve as a Frontend Web Developer at Halo Media LLC, where my mission is to design and implement robust and scalable solutions that enhance the user experience in the construction industry.",
+    currentRole: {
+      title: "Technical Lead & Frontend Developer",
+      company: "Halo Media LLC",
+      period: "2023 - Present",
+      responsibilities: [
+        "Leading the technical development of the ticketing portfolio",
+        "Implementing solutions using Next.js, React, Nest.js, and Docker",
+        "Creating Progressive Web Apps (PWAs) for enhanced user experience",
+        "Managing team organization and deployment across environments"
+      ]
+    }
+  });
 
   const startRecording = async () => {
     try {
@@ -37,6 +68,39 @@ function App() {
     }
   };
 
+  const updateResponsibility = (index: number, value: string) => {
+    const newResponsibilities = [...profile.currentRole.responsibilities];
+    newResponsibilities[index] = value;
+    setProfile({
+      ...profile,
+      currentRole: {
+        ...profile.currentRole,
+        responsibilities: newResponsibilities
+      }
+    });
+  };
+
+  const addResponsibility = () => {
+    setProfile({
+      ...profile,
+      currentRole: {
+        ...profile.currentRole,
+        responsibilities: [...profile.currentRole.responsibilities, ""]
+      }
+    });
+  };
+
+  const removeResponsibility = (index: number) => {
+    const newResponsibilities = profile.currentRole.responsibilities.filter((_, i) => i !== index);
+    setProfile({
+      ...profile,
+      currentRole: {
+        ...profile.currentRole,
+        responsibilities: newResponsibilities
+      }
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -57,16 +121,28 @@ function App() {
                   alt="Profile"
                   className="w-24 h-24 rounded-full object-cover"
                 />
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Frontend Developer & Technical Lead</h2>
-                  <p className="text-gray-600">Halo Media LLC</p>
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    value={profile.title}
+                    onChange={(e) => setProfile({ ...profile, title: e.target.value })}
+                    className="text-2xl font-bold text-gray-900 w-full border-b border-transparent hover:border-gray-300 focus:border-gray-500 focus:outline-none"
+                  />
+                  <input
+                    type="text"
+                    value={profile.company}
+                    onChange={(e) => setProfile({ ...profile, company: e.target.value })}
+                    className="text-gray-600 w-full border-b border-transparent hover:border-gray-300 focus:border-gray-500 focus:outline-none"
+                  />
                 </div>
               </div>
 
               <div className="prose max-w-none">
-                <p className="text-gray-700 leading-relaxed">
-                  With a professional career of over 10 years, I have specialized in frontend development and technical leadership of innovative projects. Currently, I serve as a Frontend Web Developer at Halo Media LLC, where my mission is to design and implement robust and scalable solutions that enhance the user experience in the construction industry.
-                </p>
+                <textarea
+                  value={profile.bio}
+                  onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+                  className="w-full h-32 text-gray-700 leading-relaxed border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
             </section>
 
@@ -77,14 +153,61 @@ function App() {
                 Current Role
               </h3>
               <div className="border-l-2 border-blue-500 pl-4">
-                <h4 className="font-medium text-gray-900">Technical Lead & Frontend Developer</h4>
-                <p className="text-gray-600 text-sm">Halo Media LLC • 2023 - Present</p>
-                <ul className="mt-2 text-gray-700 list-disc list-inside">
-                  <li>Leading the technical development of the ticketing portfolio</li>
-                  <li>Implementing solutions using Next.js, React, Nest.js, and Docker</li>
-                  <li>Creating Progressive Web Apps (PWAs) for enhanced user experience</li>
-                  <li>Managing team organization and deployment across environments</li>
+                <input
+                  type="text"
+                  value={profile.currentRole.title}
+                  onChange={(e) => setProfile({
+                    ...profile,
+                    currentRole: { ...profile.currentRole, title: e.target.value }
+                  })}
+                  className="font-medium text-gray-900 w-full border-b border-transparent hover:border-gray-300 focus:border-gray-500 focus:outline-none"
+                />
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="text"
+                    value={profile.currentRole.company}
+                    onChange={(e) => setProfile({
+                      ...profile,
+                      currentRole: { ...profile.currentRole, company: e.target.value }
+                    })}
+                    className="text-gray-600 text-sm border-b border-transparent hover:border-gray-300 focus:border-gray-500 focus:outline-none"
+                  />
+                  <span className="text-gray-600 text-sm">•</span>
+                  <input
+                    type="text"
+                    value={profile.currentRole.period}
+                    onChange={(e) => setProfile({
+                      ...profile,
+                      currentRole: { ...profile.currentRole, period: e.target.value }
+                    })}
+                    className="text-gray-600 text-sm border-b border-transparent hover:border-gray-300 focus:border-gray-500 focus:outline-none"
+                  />
+                </div>
+                <ul className="mt-2 text-gray-700 space-y-2">
+                  {profile.currentRole.responsibilities.map((responsibility, index) => (
+                    <li key={index} className="flex items-center space-x-2">
+                      <span className="text-gray-400">•</span>
+                      <input
+                        type="text"
+                        value={responsibility}
+                        onChange={(e) => updateResponsibility(index, e.target.value)}
+                        className="flex-1 border-b border-transparent hover:border-gray-300 focus:border-gray-500 focus:outline-none"
+                      />
+                      <button
+                        onClick={() => removeResponsibility(index)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        ×
+                      </button>
+                    </li>
+                  ))}
                 </ul>
+                <button
+                  onClick={addResponsibility}
+                  className="mt-2 text-blue-500 hover:text-blue-700 text-sm"
+                >
+                  + Add Responsibility
+                </button>
               </div>
             </section>
           </div>
